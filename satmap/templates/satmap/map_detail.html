@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <article class="post">
+        <aside class="actions">  
+            {% if user.is_authenticated %}
+                <a class="btn btn-secondary" href="{% url 'map_edit' pk=map.pk %}">
+                    {% include './icons/pencil-fill.svg' %}
+                </a>
+            {% endif %}
+        </aside>
+        {% if map.published_date %}
+            <time class="date">
+                {{ map.published_date }}
+            </time>
+        {% endif %}
+        <h2>{{ map.title }}</h2>
+        <p>Coordinates: {{ map.latitude }}, {{ map.longitude|linebreaksbr }}</p>
+    </article>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    {% for map in map_list %}
+        <article>
+            <time class="date">
+                {{ map.published_date }}
+            </time>
+            <h2>{{ map.title }}</h2>
+            <!-- <h2><a href="{% url 'map_detail' pk=map.pk %}">{{ map.title }}</a></h2>-->
+            <p>Coordinates: {{ map.latitude }}, {{ map.longitude|linebreaksbr }}</p>
+        </article>
+        <div id="map{{ map.id }}" class="map"></div>
+        <script>
+            function initMap() {
+                // Create a map object
+               
+                const map = new google.maps.Map(document.getElementById("map{{ map.id }}"), {
+                        center: {lat: {{ map.latitude }}, lng: {{ map.longitude}}},  // Set the initial center of the map
+                        zoom: {{ map.zoom }}  // Set the initial zoom level
+                });
+            }
+            initMap();
+        </script>
+         
+    {% endfor %}
+{% endblock %}

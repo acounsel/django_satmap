@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+	{% for project in project_list %}
+	    <article class="post">
+		<!-- <time class="date">
+		    {{ post.published_date }}
+		</time> -->
+		<h2><a href="{% url 'project_detail' pk=project.pk %}">{{ project.name }}</a></h2>
+		<p>{{ project.description|linebreaksbr }}</p>
+	    </article>
+	{% endfor %}
+{% endblock %}

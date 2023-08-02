@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <article class="post">
+        <aside class="actions">  
+            {% if user.is_authenticated %}
+                <a class="btn btn-secondary" href="">
+                    {% include './icons/pencil-fill.svg' %}
+                </a>
+            {% endif %}
+        </aside>
+        <h2>{{ project.name }}</h2>
+        <p>{{ project.description|linebreaksbr }}</p>
+        {% for map in project.map_set.all %}
+        <h1>{{ map.start_date }}</h1>
+        <div id="map{{ map.id }}" class="map"></div>
+        <script>
+            function initMap() {
+                // Create a map object
+               
+                const map = new google.maps.Map(document.getElementById("map{{ map.id }}"), {
+                        center: {lat: {{ map.latitude }}, lng: {{ map.longitude}}},  // Set the initial center of the map
+                        zoom: {{ map.zoom }}  // Set the initial zoom level
+                });
+            }
+            initMap();
+        </script>
+        {% endfor %}
+    </article>
+{% endblock %}
