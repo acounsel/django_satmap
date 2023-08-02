@@ -1,10 +1,12 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
+from django.urls import reverse
 from django.views.generic import View, DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView
 from .models import Map, Project
 # from .forms import MapForm
-from django.shortcuts import redirect
+
+import ee
 
 class MapView(View):
     model = Map
@@ -13,16 +15,46 @@ class MapList(MapView, ListView):
     pass
 
 class MapDetail(MapView, DetailView):
-    pass
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Define an image.
+        service_account = 'satmap@ee-samer.iam.gserviceaccount.com'
+        credentials = ee.ServiceAccountCredentials(service_account, 'ee-samer-1cb0ce0fa0a0.json')
+        ee.Initialize(credentials)
+        image = ee.Image('LANDSAT/LC08/C01/T1_TOA/LC08_044034_20140318')
+        # Get image URL
+        context['url'] = image.getThumbURL({'min': 0, 'max': 3000, 'scale': 300})
+        return context
 
 class MapCreate(MapView, CreateView):
-    pass
+    fields = ('title', 'latitude', 'longitude', 'zoom', 
+        'project', 'layer', 'start_date', 'end_date')
+    
+    def get_project(self):
+        return Project.objects.get(id=self.request.GET['project'])
+
+    def get_initial(self):
+        initial = super().get_initial()
+        project = self.get_project()
+        initial['project'] = project
+        initial['latitude'] = project.latitude
+        initial['longitude'] = project.longitude
+        return initial.copy()
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        response = super().form_valid(form)
+        return response
+
+    def get_success_url(self):
+        project = self.get_project()
+        return reverse('project_detail', kwargs={'pk':project.id})
 
 class ProjectCreate(CreateView):
     model = Project
-    fields = ('name', 'description', 
+    fields = ('name', 'description',
         'latitude', 'longitude', 'start_date', 'end_date', 'datasets')
-    success_url = '/'
 
 class ProjectDetail(DetailView):
     model = Project

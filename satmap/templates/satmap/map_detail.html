@@ -4,8 +4,8 @@
     <article class="post">
         <aside class="actions">  
             {% if user.is_authenticated %}
-                <a class="btn btn-secondary" href="{% url 'map_edit' pk=map.pk %}">
-                    {% include './icons/pencil-fill.svg' %}
+                <a class="btn btn-secondary" href=""">
+                    
                 </a>
             {% endif %}
         </aside>
@@ -14,7 +14,28 @@
                 {{ map.published_date }}
             </time>
         {% endif %}
-        <h2>{{ map.title }}</h2>
+        <h2>{{ map.title }} - {{ url }}</h2>
         <p>Coordinates: {{ map.latitude }}, {{ map.longitude|linebreaksbr }}</p>
     </article>
+
+    <div id="map{{ map.id }}" class="map"></div>
+    <script>
+        function initMap() {
+            // Create a map object
+           
+            const map = new google.maps.Map(document.getElementById("map{{ map.id }}"), {
+                zoom: 4,
+                center: {lat: 0, lng: 0}
+            });
+
+            var geeLayer = new google.maps.GroundOverlay(
+                "{{ url }}",
+                {north: 80, south: -80, east: 180, west: -180},
+                {opacity: 0.5}
+                );
+
+                geeLayer.setMap(map);
+        }
+        initMap();
+    </script>
 {% endblock %}

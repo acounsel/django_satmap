@@ -5,14 +5,14 @@
         <aside class="actions">  
             {% if user.is_authenticated %}
                 <a class="btn btn-secondary" href="">
-                    {% include './icons/pencil-fill.svg' %}
                 </a>
             {% endif %}
         </aside>
         <h2>{{ project.name }}</h2>
         <p>{{ project.description|linebreaksbr }}</p>
+        <a href="{% url 'map_create' %}?project={{ project.id }}"><button class="btn btn-primary">Add Map</button></a>
         {% for map in project.map_set.all %}
-        <h1>{{ map.start_date }}</h1>
+        <a href="{% url 'map_detail' pk=map.id %}"><h1>{{ map.title }}</h1></a>
         <div id="map{{ map.id }}" class="map"></div>
         <script>
             function initMap() {
