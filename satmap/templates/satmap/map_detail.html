@@ -1,7 +1,13 @@
 {% extends 'base.html' %}
 
+{% block head %}
+
+{{ folium_map.header.render|safe }}
+
+{% endblock %}
+
 {% block content %}
-    <article class="post">
+    <!-- <article class="post">
         <aside class="actions">  
             {% if user.is_authenticated %}
                 <a class="btn btn-secondary" href=""">
@@ -16,9 +22,11 @@
         {% endif %}
         <h2>{{ map.title }} - {{ url }}</h2>
         <p>Coordinates: {{ map.latitude }}, {{ map.longitude|linebreaksbr }}</p>
-    </article>
-
-    <div id="map{{ map.id }}" class="map"></div>
+    </article> -->
+    <div style="height:600px;width:100%">
+        {{ folium_map.html.render|safe }}
+    </div>
+    <!-- <div id="map{{ map.id }}" class="map"></div>
     <script>
         function initMap() {
             // Create a map object
@@ -37,5 +45,10 @@
                 geeLayer.setMap(map);
         }
         initMap();
-    </script>
+    </script> -->
+    <script>
+
+        {{ folium_map.script.render|safe }}
+
+      </script>
 {% endblock %}
