@@ -11,7 +11,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'satmap',
         'USER': 'samer',
-        'PASSWORD': '',
+        'PASSWORD': 'samer',
         'HOST': 'localhost',
         'PORT': '5432',
     }

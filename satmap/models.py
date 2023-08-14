@@ -2,6 +2,8 @@ from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 class Layer(models.Model):
     name = models.CharField(max_length=255)
@@ -11,6 +13,9 @@ class Layer(models.Model):
         decimal_places=3, blank=True, null=True)
     max = models.DecimalField(max_digits=10,
         decimal_places=3, blank=True, null=True)
+    #opacity = models.DecimalField(decimal_places=3, default=0.5, validators=[
+            #MinValueValidator(0),
+            #MaxValueValidator(1)])
 
     def __str__(self):
         return self.name
@@ -53,6 +58,6 @@ class Map(models.Model):
 
     def __str__(self):
         if self.project:
-            return self.project.name + ' map'
+            return self.title + ' (' + self.project.name + ')'
         else:
-            return 'Map: {}'.format(self.published_date)
+            return self.title

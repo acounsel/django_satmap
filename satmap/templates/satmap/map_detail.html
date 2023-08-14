@@ -7,6 +7,10 @@
 {% endblock %}
 
 {% block content %}
+    <a href="{% url 'map_edit' pk=map.pk %}"><button class="btn btn-primary">Edit Map</button></a>
+    <p>
+    <b>              
+    </p>
     <!-- <article class="post">
         <aside class="actions">  
             {% if user.is_authenticated %}
