@@ -13,9 +13,9 @@ class Layer(models.Model):
         decimal_places=3, blank=True, null=True)
     max = models.DecimalField(max_digits=10,
         decimal_places=3, blank=True, null=True)
-    #opacity = models.DecimalField(decimal_places=3, default=0.5, validators=[
-            #MinValueValidator(0),
-            #MaxValueValidator(1)])
+    opacity = models.DecimalField(max_digits=3, decimal_places=2, default=0.5, validators=[
+            MinValueValidator(0),
+            MaxValueValidator(1)])
 
     def __str__(self):
         return self.name
@@ -44,9 +44,7 @@ class Map(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     zoom = models.IntegerField(default=8)
-    layer = models.ForeignKey(Layer, on_delete=models.SET_NULL, 
-        blank=True, null=True)
-    dataset = models.CharField(max_length=255, blank=True)
+    layer = models.ManyToManyField(Layer, blank=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
     created_date = models.DateTimeField(default=timezone.now)
