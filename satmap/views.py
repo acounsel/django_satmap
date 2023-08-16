@@ -50,8 +50,8 @@ class MapDetail(MapView, DetailView):
 
         #Styling 
         vis_paramsNDVI = {
-            'min': map.layer.min,
-            'max': map.layer.max,
+            'min': float(map.layer.min),
+            'max': float(map.layer.max),
             'palette': [ 'FE8374', 'C0E5DE', '3A837C','034B48',]}
 
         
