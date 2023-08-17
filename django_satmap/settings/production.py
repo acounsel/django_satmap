@@ -2,7 +2,7 @@ from .base import *
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['accsatmap.herokuapp.com']
+ALLOWED_HOSTS = ['satmapper.herokuapp.com']
 
 if "DATABASE_URL" in os.environ:
     # Configure Django for DATABASE_URL environment variable.
