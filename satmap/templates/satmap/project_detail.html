@@ -20,6 +20,10 @@
         {% for map in project.map_set.all %}
         <a href="{% url 'map_detail' pk=map.pk %}"><h1>{{ map.title }}</h1></a>
         <p>{{ map.description }}</p>
+        <a href="{% url 'map_edit' pk=map.pk %}"><button class="btn btn-primary">Edit Map</button></a>
+        <a href="{% url 'map_duplicate' pk=map.pk %}?project={{ map.project.id }}"><button class="btn btn-primary">Duplicate Map</button></a>
+        <a href="{% url 'map_delete' pk=map.pk %}"><button class="btn btn-primary">Delete Map</button></a>
+        <p><b></p>
         <div id="map{{ map.id }}" class="map"></div>
         <script>
             function initMap() {

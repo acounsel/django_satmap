@@ -15,6 +15,11 @@
 		</time> -->
 		<h2><a href="{% url 'project_detail' pk=project.pk %}">{{ project.name }}</a></h2>
 		<p>{{ project.description|linebreaksbr }}</p>
+		<a href="{% url 'project_edit' pk=project.pk %}"><button class="btn btn-primary">Edit Project</button></a>
+        <a href="{% url 'project_duplicate' pk=project.pk %}"><button class="btn btn-primary">Duplicate Project</button></a>
+        <a href="{% url 'project_delete' pk=project.pk %}"><button class="btn btn-primary">Delete Project</button></a>
+        <p><b></p>
+
 	    </article>
 	{% endfor %}
 {% endblock %}

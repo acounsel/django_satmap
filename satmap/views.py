@@ -54,7 +54,7 @@ class MapDetail(MapView, DetailView):
             vis_params = {
                 'min': float(layer_instance.min),
                 'max': float(layer_instance.max),
-                'palette': layer_instance.palette,
+                'palette': layer_instance.get_palette_list(),
                 'opacity': float(layer_instance.opacity)
                 }
             
@@ -65,7 +65,7 @@ class MapDetail(MapView, DetailView):
             folium.raster_layers.TileLayer(
                         tiles = map_id_dict['tile_fetcher'].url_format,
                         attr = 'Google Earth Engine',
-                        name = layer_instance.band,
+                        name = layer_instance.name,
                         overlay = True,
                         control = True
                         ).add_to(m)
@@ -96,21 +96,13 @@ class MapCreate(MapView, CreateView):
         initial['layer'] = project.datasets.all()
         return initial.copy()
 
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        response = super().form_valid(form)
-        return response
-
     def get_success_url(self):
         project = self.get_project()
         return reverse('project_detail', kwargs={'pk':project.id})
     
-class MapDuplicate(MapView, CreateView):
+class MapDuplicate(MapCreate):
     def get_map(self):
         return Map.objects.get(id=self.kwargs['pk'])
-    
-    def get_project(self):
-        return Project.objects.get(id=self.request.POST['project']) #why does only POST work
 
     def get_initial(self):
         initial = super().get_initial()
@@ -124,15 +116,6 @@ class MapDuplicate(MapView, CreateView):
         initial['longitude'] = map.longitude
         initial['layer'] = map.layer.all()
         return initial.copy()
-
-    def form_valid(self, form): #??
-        form.instance.user = self.request.user
-        response = super().form_valid(form)
-        return response
-
-    def get_success_url(self):
-        project = self.get_project()
-        return reverse('project_detail', kwargs={'pk':project.id})
 
 class MapUpdate(MapView, UpdateView):
     pass
@@ -150,6 +133,11 @@ class ProjectCreate(CreateView):
     fields = ('name', 'description',
         'latitude', 'longitude', 'start_date', 'end_date', 'datasets')
     
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        response = super().form_valid(form)
+        return response
+    
 class ProjectDuplicate(ProjectCreate, CreateView):
     def get_project(self):
         return Project.objects.get(id=self.kwargs['pk'])
@@ -166,8 +154,15 @@ class ProjectDuplicate(ProjectCreate, CreateView):
         initial['datasets'] = project.datasets.all()
         return initial.copy()
     
-    #do i need form_valid
-
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        newproject = form.instance
+        project = self.get_project()
+        maps = Map.objects.filter(project=project)
+        for map in maps:
+            map.duplicate(project=newproject)
+        return response
+        
     def get_success_url(self):
         return reverse('project_list')
 
