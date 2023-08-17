@@ -15,6 +15,8 @@ import ee
 
 class MapView(View):
     model = Map
+    fields = ('title', 'latitude', 'longitude', 'zoom', 
+        'project', 'layer', 'start_date', 'end_date')
 
 class MapList(MapView, ListView):
     pass
@@ -41,28 +43,37 @@ class MapDetail(MapView, DetailView):
 
         
         #select the Dataset Here's used the MODIS data
-        dataset = (ee.ImageCollection(map.layer.code).filter(
+        dataset = (ee.ImageCollection(map.layer.first().code).filter(
             ee.Filter.date(
                 map.start_date.strftime('%Y-%m-%d'),
                 map.end_date.strftime('%Y-%m-%d')
             )).first())
-        modisndvi = dataset.select(map.layer.band)
+        layer = dataset.select(map.layer.first().band)
 
         #Styling 
-        vis_paramsNDVI = {
-            'min': float(map.layer.min),
-            'max': float(map.layer.max),
-            'palette': [ 'FE8374', 'C0E5DE', '3A837C','034B48',]}
-
+        vis_params = {
+            'min': float(map.layer.first().min),
+            'max': float(map.layer.first().max),
+            'palette': ['blue', 'purple', 'cyan', 'green', 'yellow', 'red'],
+            'opacity': float(map.layer.first().opacity)
+            }
         
         #add the map to the the folium map
-        map_id_dict = ee.Image(modisndvi).getMapId(vis_paramsNDVI)
+        map_id_dict = ee.Image(layer).getMapId(vis_params)
        
         #GEE raster data to TileLayer
         folium.raster_layers.TileLayer(
                     tiles = map_id_dict['tile_fetcher'].url_format,
                     attr = 'Google Earth Engine',
-                    name = map.layer.band,
+                    name = map.layer.last().band,
+                    overlay = True,
+                    control = True
+                    ).add_to(m)
+        
+        folium.raster_layers.TileLayer(
+                    tiles = map_id_dict['tile_fetcher'].url_format,
+                    attr = 'Google Earth Engine',
+                    name = map.layer.first().band,
                     overlay = True,
                     control = True
                     ).add_to(m)
@@ -70,6 +81,7 @@ class MapDetail(MapView, DetailView):
         
         #add Layer control
         m.add_child(folium.LayerControl())
+        m.add_child(folium.OpacityControl())
        
         #figure 
         figure.render()
@@ -80,9 +92,6 @@ class MapDetail(MapView, DetailView):
         return context
 
 class MapCreate(MapView, CreateView):
-    fields = ('title', 'latitude', 'longitude', 'zoom', 
-        'project', 'layer', 'start_date', 'end_date')
-    
     def get_project(self):
         return Project.objects.get(id=self.request.GET['project'])
 
@@ -90,8 +99,11 @@ class MapCreate(MapView, CreateView):
         initial = super().get_initial()
         project = self.get_project()
         initial['project'] = project
+        initial['start_date'] = project.start_date
+        initial['end_date'] = project.end_date
         initial['latitude'] = project.latitude
         initial['longitude'] = project.longitude
+        initial['layer'] = project.datasets.all()
         return initial.copy()
 
     def form_valid(self, form):
@@ -102,6 +114,9 @@ class MapCreate(MapView, CreateView):
     def get_success_url(self):
         project = self.get_project()
         return reverse('project_detail', kwargs={'pk':project.id})
+
+class MapUpdate(MapView, UpdateView):
+    pass
 
 class ProjectCreate(CreateView):
     model = Project

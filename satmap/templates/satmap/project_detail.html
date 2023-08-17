@@ -11,6 +11,8 @@
         <h2>{{ project.name }}</h2>
         <p>{{ project.description|linebreaksbr }}</p>
         <a href="{% url 'map_create' %}?project={{ project.id }}"><button class="btn btn-primary">Add Map</button></a>
+        <b>
+        </p>
         {% for map in project.map_set.all %}
         <a href="{% url 'map_detail' pk=map.id %}"><h1>{{ map.title }}</h1></a>
         <div id="map{{ map.id }}" class="map"></div>

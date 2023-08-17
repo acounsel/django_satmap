@@ -8,4 +8,5 @@ urlpatterns = [
     path('maps', views.MapList.as_view(), name='map_list'),
     path('map/create/', views.MapCreate.as_view(), name='map_create'),
     path('map/<int:pk>/', views.MapDetail.as_view(), name='map_detail'),
+    path('map/edit/<int:pk>/', views.MapUpdate.as_view(), name='map_edit'),
 ]

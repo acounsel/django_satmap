@@ -1,6 +1,13 @@
 {% extends 'base.html' %}
 
 {% block content %}
+	<p>
+	<br> Create a new project using this button, or click on one of the existing projects below to view and edit it.
+	<br>
+	<br><a href="{% url 'project_create' %}"><button class="btn btn-primary">Add Project</button></a>
+	<br>
+	<br>
+	</p>
 	{% for project in project_list %}
 	    <article class="post">
 		<!-- <time class="date">
