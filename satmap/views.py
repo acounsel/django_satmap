@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
 from django.urls import reverse
 from django.views.generic import View, DetailView, ListView
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from .models import Map, Project
 
@@ -41,49 +41,37 @@ class MapDetail(MapView, DetailView):
         #add map to figure
         m.add_to(figure)
 
-        
-        #select the Dataset Here's used the MODIS data
-        dataset = (ee.ImageCollection(map.layer.first().code).filter(
-            ee.Filter.date(
-                map.start_date.strftime('%Y-%m-%d'),
-                map.end_date.strftime('%Y-%m-%d')
-            )).first())
-        layer = dataset.select(map.layer.first().band)
+        for layer_instance in map.layer.all():
+            #select the Dataset Here's used the MODIS data
+            dataset = (ee.ImageCollection(layer_instance.code).filter(
+                ee.Filter.date(
+                    map.start_date.strftime('%Y-%m-%d'),
+                    map.end_date.strftime('%Y-%m-%d')
+                )).first())
+            layer = dataset.select(layer_instance.band)
 
-        #Styling 
-        vis_params = {
-            'min': float(map.layer.first().min),
-            'max': float(map.layer.first().max),
-            'palette': ['blue', 'purple', 'cyan', 'green', 'yellow', 'red'],
-            'opacity': float(map.layer.first().opacity)
-            }
+            #Styling 
+            vis_params = {
+                'min': float(layer_instance.min),
+                'max': float(layer_instance.max),
+                'palette': layer_instance.palette,
+                'opacity': float(layer_instance.opacity)
+                }
+            
+            #add the map to the the folium map
+            map_id_dict = ee.Image(layer).getMapId(vis_params)
         
+            #GEE raster data to TileLayer
+            folium.raster_layers.TileLayer(
+                        tiles = map_id_dict['tile_fetcher'].url_format,
+                        attr = 'Google Earth Engine',
+                        name = layer_instance.band,
+                        overlay = True,
+                        control = True
+                        ).add_to(m)
 
-        
-        #add the map to the the folium map
-        map_id_dict = ee.Image(layer).getMapId(vis_params)
-       
-        #GEE raster data to TileLayer
-        folium.raster_layers.TileLayer(
-                    tiles = map_id_dict['tile_fetcher'].url_format,
-                    attr = 'Google Earth Engine',
-                    name = map.layer.last().band,
-                    overlay = True,
-                    control = True
-                    ).add_to(m)
-        
-        folium.raster_layers.TileLayer(
-                    tiles = map_id_dict['tile_fetcher'].url_format,
-                    attr = 'Google Earth Engine',
-                    name = map.layer.first().band,
-                    overlay = True,
-                    control = True
-                    ).add_to(m)
-
-        
         #add Layer control
         m.add_child(folium.LayerControl())
-        m.add_child(folium.OpacityControl())
        
         #figure 
         figure.render()
@@ -116,20 +104,86 @@ class MapCreate(MapView, CreateView):
     def get_success_url(self):
         project = self.get_project()
         return reverse('project_detail', kwargs={'pk':project.id})
+    
+class MapDuplicate(MapView, CreateView):
+    def get_map(self):
+        return Map.objects.get(id=self.kwargs['pk'])
+    
+    def get_project(self):
+        return Project.objects.get(id=self.request.POST['project']) #why does only POST work
+
+    def get_initial(self):
+        initial = super().get_initial()
+        map = self.get_map()
+        initial['project'] = map.project
+        initial['title'] = map.title + ' Copy'
+        initial['zoom'] = map.zoom
+        initial['start_date'] = map.start_date
+        initial['end_date'] = map.end_date
+        initial['latitude'] = map.latitude
+        initial['longitude'] = map.longitude
+        initial['layer'] = map.layer.all()
+        return initial.copy()
+
+    def form_valid(self, form): #??
+        form.instance.user = self.request.user
+        response = super().form_valid(form)
+        return response
+
+    def get_success_url(self):
+        project = self.get_project()
+        return reverse('project_detail', kwargs={'pk':project.id})
 
 class MapUpdate(MapView, UpdateView):
     pass
+
+class MapDelete(MapView, DeleteView):
+    def get_map(self):
+        return Map.objects.get(id=self.kwargs['pk'])
+    
+    def get_success_url(self):
+        map = self.get_map()
+        return reverse('project_detail', kwargs={'pk':map.project.id})
 
 class ProjectCreate(CreateView):
     model = Project
     fields = ('name', 'description',
         'latitude', 'longitude', 'start_date', 'end_date', 'datasets')
+    
+class ProjectDuplicate(ProjectCreate, CreateView):
+    def get_project(self):
+        return Project.objects.get(id=self.kwargs['pk'])
+    
+    def get_initial(self):
+        initial = super().get_initial()
+        project = self.get_project()
+        initial['name'] = project.name + ' Copy'
+        initial['description'] = project.description
+        initial['start_date'] = project.start_date
+        initial['end_date'] = project.end_date
+        initial['latitude'] = project.latitude
+        initial['longitude'] = project.longitude
+        initial['datasets'] = project.datasets.all()
+        return initial.copy()
+    
+    #do i need form_valid
+
+    def get_success_url(self):
+        return reverse('project_list')
 
 class ProjectDetail(DetailView):
     model = Project
 
+class ProjectUpdate(ProjectCreate, UpdateView):
+    pass
+
 class ProjectList(ListView):
     model = Project
+
+class ProjectDelete(DeleteView):
+    model = Project;
+    def get_success_url(self):
+        return reverse('project_list')
 
 # def map_list(request):
 #     maps = Map.objects.filter(published_date__lte=timezone.now()).order_by('published_date')

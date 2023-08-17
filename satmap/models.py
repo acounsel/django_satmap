@@ -3,7 +3,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
-
+from django.contrib.postgres.fields import ArrayField
 
 class Layer(models.Model):
     name = models.CharField(max_length=255)
@@ -16,6 +16,10 @@ class Layer(models.Model):
     opacity = models.DecimalField(max_digits=3, decimal_places=2, default=0.5, validators=[
             MinValueValidator(0),
             MaxValueValidator(1)])
+    palette = ArrayField(models.CharField(max_length=255), default=['blue', 'purple', 'cyan', 'green', 'yellow', 'red'])
+
+    class Meta:
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -29,6 +33,9 @@ class Project(models.Model):
     end_date = models.DateField(blank=True, null=True)
     datasets = models.ManyToManyField(Layer, blank=True)
 
+    class Meta:
+        ordering = ['name']
+    
     def __str__(self):
         return self.name
     
@@ -41,6 +48,7 @@ class Map(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, 
         blank=True, null=True)
     title = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     zoom = models.IntegerField(default=8)
@@ -50,6 +58,9 @@ class Map(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     published_date = models.DateTimeField(blank=True, null=True)
 
+    class Meta:
+        ordering = ['title']
+    
     def publish(self):
         self.published_date = timezone.now()
         self.save()

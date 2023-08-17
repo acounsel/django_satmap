@@ -9,12 +9,17 @@
             {% endif %}
         </aside>
         <h2>{{ project.name }}</h2>
-        <p>{{ project.description|linebreaksbr }}</p>
+        <p>{{ project.description }}</p>
+        <a href="{% url 'project_edit' pk=project.pk %}"><button class="btn btn-primary">Edit Project</button></a>
+        <a href="{% url 'project_duplicate' pk=project.pk %}"><button class="btn btn-primary">Duplicate Project</button></a>
+        <a href="{% url 'project_delete' pk=project.pk %}"><button class="btn btn-primary">Delete Project</button></a>
+        <p><b></p>
         <a href="{% url 'map_create' %}?project={{ project.id }}"><button class="btn btn-primary">Add Map</button></a>
-        <b>
-        </p>
+        <p><b></p>
+
         {% for map in project.map_set.all %}
-        <a href="{% url 'map_detail' pk=map.id %}"><h1>{{ map.title }}</h1></a>
+        <a href="{% url 'map_detail' pk=map.pk %}"><h1>{{ map.title }}</h1></a>
+        <p>{{ map.description }}</p>
         <div id="map{{ map.id }}" class="map"></div>
         <script>
             function initMap() {
@@ -27,6 +32,7 @@
             }
             initMap();
         </script>
+        <p><b></p>
         {% endfor %}
     </article>
 {% endblock %}
