@@ -7,10 +7,13 @@
 {% endblock %}
 
 {% block content %}
+    <h2>{{ map.title }}</h2>
+    <p>{{ map.description }}</p>
+    <p><b></p>
     <a href="{% url 'map_edit' pk=map.pk %}"><button class="btn btn-primary">Edit Map</button></a>
-    <p>
-    <b>              
-    </p>
+    <a href="{% url 'map_duplicate' pk=map.pk %}"><button class="btn btn-primary">Duplicate Map</button></a>
+    <a href="{% url 'map_delete' pk=map.pk %}"><button class="btn btn-primary">Delete Map</button></a>
+    <p><b></p>
     <!-- <article class="post">
         <aside class="actions">  
             {% if user.is_authenticated %}
