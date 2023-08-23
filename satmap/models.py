@@ -18,6 +18,7 @@ class Layer(models.Model):
             MaxValueValidator(1)])
     #palette = ArrayField(models.CharField(max_length=255), default=['blue', 'purple', 'cyan', 'green', 'yellow', 'red'])
     palette = models.TextField(default = "'blue', 'purple', 'cyan', 'green', 'yellow', 'red'")
+    is_collection = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['name']

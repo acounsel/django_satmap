@@ -12,7 +12,7 @@ def get_env_variable(var_name):
     try:
         return os.environ[var_name] 
     except KeyError:
-        error_msg = 'Set the {} environment 􏰁\
+        error_msg = 'Set the {} environment \
             variable'.format(var_name)
     raise ImproperlyConfigured(error_msg)
 
@@ -116,6 +116,8 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'admin@accountabilitysat.com'
 SERVER_EMAIL = 'server@accountabilitysat.com'
 
+
+MAPBOX_KEY = get_env_variable('MAPBOX_KEY')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
