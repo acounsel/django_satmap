@@ -8,12 +8,24 @@
 
 {% block content %}
     <h2>{{ map.title }}</h2>
-    <p>{{ map.description }}</p>
-    <p><b></p>
-    <a href="{% url 'map_edit' pk=map.pk %}"><button class="btn btn-primary">Edit Map</button></a>
-    <a href="{% url 'map_duplicate' pk=map.pk %}?project={{ map.project.id }}"><button class="btn btn-primary">Duplicate Map</button></a>
-    <a href="{% url 'map_delete' pk=map.pk %}"><button class="btn btn-primary">Delete Map</button></a>
-    <p><b></p>
+    <a href="{% url 'map_edit' pk=map.pk %}"><i class="fa-light fa-pencil" title="Edit Map"></i></a>
+    <a href="{% url 'map_duplicate' pk=map.pk %}?project={{ map.project.id }}"><i class="fa-regular fa-copy" title="Duplicate Map"></i></a>
+    <a href="{% url 'map_delete' pk=map.pk %}"><i class="fa-regular fa-trash-can" title="Delete Map"></i></a>
+    <p class="py-3">{{ map.description }}</p>
+    <h3>Map Data</h3>
+    {% for layer in  map.layer.all %}
+    <div class="py-3">
+        <p><strong>{{ layer.name }}</strong>: {{ layer.description }}</p>
+        <div class="d-flex w-100 py-3">
+            <div style="flex:1;" class="text-center">{{ layer.min }}</div>
+            {% for color in layer.get_palette_list %}
+            <div style="flex:1;background-color: #{{ color }};"></div>
+            {% endfor %}
+            <div style="flex:1;" class="text-center">{{ layer.max }}</div>
+        </div>
+    </div>
+    {% endfor %}
+
     <!-- <article class="post">
         <aside class="actions">  
             {% if user.is_authenticated %}

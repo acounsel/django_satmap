@@ -10,9 +10,9 @@
         </aside>
         <h2>{{ project.name }}</h2>
         <p>{{ project.description }}</p>
-        <a href="{% url 'project_edit' pk=project.pk %}"><button class="btn btn-primary">Edit Project</button></a>
-        <a href="{% url 'project_duplicate' pk=project.pk %}"><button class="btn btn-primary">Duplicate Project</button></a>
-        <a href="{% url 'project_delete' pk=project.pk %}"><button class="btn btn-primary">Delete Project</button></a>
+        <a class="Icon" href="{% url 'project_edit' pk=project.pk %}"><i class="fa-light fa-pencil" title="Edit Project"></i></a> 
+		<a class="Icon" href="{% url 'project_duplicate' pk=project.pk %}"><i class="fa-regular fa-copy" title="Duplicate Project"></i></a>
+		<a class="Icon" href="{% url 'project_delete' pk=project.pk %}"><i class="fa-regular fa-trash-can" title="Delete Project"></i></a>
         <p><b></p>
         <a href="{% url 'map_create' %}?project={{ project.id }}"><button class="btn btn-primary">Add Map</button></a>
         <p><b></p>
@@ -20,9 +20,9 @@
         {% for map in project.map_set.all %}
         <h1><a href="{% url 'map_detail' pk=map.pk %}">{{ map.title }}</a></h1>
         <p>{{ map.description }}</p>
-        <a href="{% url 'map_edit' pk=map.pk %}"><button class="btn btn-primary">Edit Map</button></a>
-        <a href="{% url 'map_duplicate' pk=map.pk %}?project={{ map.project.id }}"><button class="btn btn-primary">Duplicate Map</button></a>
-        <a href="{% url 'map_delete' pk=map.pk %}"><button class="btn btn-primary">Delete Map</button></a>
+        <a href="{% url 'map_edit' pk=map.pk %}"><i class="fa-light fa-pencil" title="Edit Map"></i></a>
+        <a href="{% url 'map_duplicate' pk=map.pk %}?project={{ map.project.id }}"><i class="fa-regular fa-copy" title="Duplicate Map"></i></a>
+        <a href="{% url 'map_delete' pk=map.pk %}"><i class="fa-regular fa-trash-can" title="Delete Map"></i></a>
         <p><b></p>
         <div id="map{{ map.id }}" class="map"></div>
         <script>
