@@ -10,8 +10,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'satmap',
-        'USER': 'postgres',
-        'PASSWORD': 'Zazapachulia21*',
+        'USER': 'samer',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '5432',
     }
