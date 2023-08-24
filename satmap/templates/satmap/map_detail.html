@@ -2,7 +2,7 @@
 
 {% block head %}
 
-{{ folium_map.header.render|safe }}
+
 
 {% endblock %}
 
@@ -31,7 +31,7 @@
         <p>Coordinates: {{ map.latitude }}, {{ map.longitude|linebreaksbr }}</p>
     </article> -->
     <div style="height:600px;width:100%">
-        {{ folium_map.html.render|safe }}
+        {{ folium_map|safe }}
     </div>
     <!-- <div id="map{{ map.id }}" class="map"></div>
     <script>
@@ -55,7 +55,6 @@
     </script> -->
     <script>
 
-        {{ folium_map.script.render|safe }}
 
       </script>
 {% endblock %}

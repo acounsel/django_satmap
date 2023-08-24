@@ -34,8 +34,8 @@ class MapDetail(MapView, DetailView):
         ee.Initialize(credentials)
         figure = folium.Figure()
         
-        mapbox_satellite_url = "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token={}".format(settings.MAPBOX_KEY)
-
+        # mapbox_satellite_url = "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token={}".format(settings.MAPBOX_KEY)
+        mapbox_satellite_url = 'https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1Ijoic2FyYWFiaSIsImEiOiJjbGxvYmpxYWMwNzR4M2luM2FhMTBtMDFwIn0.dtam9tTkw1w0b88z-c_BDA'
 
         #create Folium Object
         m = folium.Map(
