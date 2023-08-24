@@ -1,5 +1,5 @@
 import folium
-
+from .utils import initialize_gee
 from django.conf import settings
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
@@ -26,12 +26,9 @@ class MapDetail(MapView, DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        initialize_gee()
         # Define an image.
         map = self.get_object()
-        service_account = 'satmap@ee-samer.iam.gserviceaccount.com'
-        credentials = ee.ServiceAccountCredentials(
-            service_account, 'ee-samer-1cb0ce0fa0a0.json')
-        ee.Initialize(credentials)
         figure = folium.Figure()
         
         # mapbox_satellite_url = "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token={}".format(settings.MAPBOX_KEY)
@@ -60,13 +57,7 @@ class MapDetail(MapView, DetailView):
                 dataset = (ee.Image(layer_instance.code))
             layer = dataset.select(layer_instance.band)
 
-            #Styling 
-            vis_params = {
-                'min': float(layer_instance.min),
-                'max': float(layer_instance.max),
-                'palette': layer_instance.get_palette_list(),
-                'opacity': float(layer_instance.opacity)
-                }
+            vis_params = layer_instance.get_vis_params()
             
             #add the map to the the folium map
             map_id_dict = ee.Image(layer).getMapId(vis_params)
@@ -93,9 +84,7 @@ class MapSplit(MapView, DetailView):
         context = super().get_context_data(**kwargs)
         # Define an image.
         map = self.get_object()
-        service_account = 'satmap@ee-samer.iam.gserviceaccount.com'
-        credentials = ee.ServiceAccountCredentials(service_account, 'ee-samer-1cb0ce0fa0a0.json')
-        ee.Initialize(credentials)
+        initialize_gee()
         figure = folium.Figure()
         
         #create Folium Object
@@ -112,14 +101,8 @@ class MapSplit(MapView, DetailView):
                 map.end_date.strftime('%Y-%m-%d')
             )).first())
         layer = dataset.select(layer_one.band)
-
-        #Styling 
-        vis_params = {
-            'min': float(layer_one.min),
-            'max': float(layer_one.max),
-            'palette': layer_one.get_palette_list(),
-            'opacity': float(layer_one.opacity)
-            }
+        
+        vis_params = layer_one.get_vis_params()
         
         #add the map to the the folium map
         map_id_dict = ee.Image(layer).getMapId(vis_params)
@@ -143,13 +126,7 @@ class MapSplit(MapView, DetailView):
         latest = collection.sort('system:time_start', False).first()
         layer = latest.select(layer_two.band)
 
-        #Styling 
-        vis_params = {
-            'min': float(layer_two.min),
-            'max': float(layer_two.max),
-            'palette': layer_two.get_palette_list(),
-            'opacity': float(layer_two.opacity)
-            }
+        vis_params = layer_two.get_vis_params()
         
         #add the map to the the folium map
         map_id_dict = ee.Image(layer).getMapId(vis_params)
@@ -163,19 +140,14 @@ class MapSplit(MapView, DetailView):
                     control = True
                     ).add_to(m.m2)
 
-        # # Save map to an HTML string
         # m = m._repr_html_()
-       
-        #add map to figure
         # m.add_to(figure)
-        m.add_child(folium.LayerControl())
-        #figure 
         # figure.render()
         # figure_html = figure._repr_html_()
+        m.add_child(folium.LayerControl())
         context['folium_map'] = m._repr_html_()
         return context
-
-
+    
 class MapTimeSeries(MapView, DetailView):
     template_name = 'satmap/map_split.html'
 
@@ -183,9 +155,8 @@ class MapTimeSeries(MapView, DetailView):
         context = super().get_context_data(**kwargs)
         # Define an image.
         map = self.get_object()
-        service_account = 'satmap@ee-samer.iam.gserviceaccount.com'
-        credentials = ee.ServiceAccountCredentials(service_account, 'ee-samer-1cb0ce0fa0a0.json')
-        ee.Initialize(credentials)
+        initialize_gee()
+
         figure = folium.Figure()
         
         #create Folium Object
@@ -202,17 +173,10 @@ class MapTimeSeries(MapView, DetailView):
                 )).first())
             layer = dataset.select(layer_instance.band)
 
-            #Styling 
-            vis_params = {
-                'min': float(layer_instance.min),
-                'max': float(layer_instance.max),
-                'palette': layer_instance.get_palette_list(),
-                'opacity': float(layer_instance.opacity)
-                }
+            vis_params = layer_instance.get_vis_params()
             
             #add the map to the the folium map
             map_id_dict = ee.Image(layer).getMapId(vis_params)
-        
             #GEE raster data to TileLayer
             folium.raster_layers.TileLayer(
                         tiles = map_id_dict['tile_fetcher'].url_format,
@@ -246,16 +210,7 @@ class MapTimeSeries(MapView, DetailView):
             add_last_point=True
         ).add_to(m)
 
-
-        # # Save map to an HTML string
-        # m = m._repr_html_()
-       
-        #add map to figure
-        # m.add_to(figure)
         m.add_child(folium.LayerControl())
-        #figure 
-        # figure.render()
-        # figure_html = figure._repr_html_()
         context['folium_map'] = m._repr_html_()
         return context
 
@@ -357,22 +312,3 @@ class ProjectDelete(DeleteView):
     model = Project
     def get_success_url(self):
         return reverse('project_list')
-
-# def map_list(request):
-#     maps = Map.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
-#     return render(request, 'blog/map_list.html', {'maps': maps})
-
-# def map_detail(request, pk):
-#     map = get_object_or_404(Map, pk=pk)
-#     return render(request, 'blog/map_detail.html', {'map': map})
-
-# def map_edit(request, pk):
-#     map = get_object_or_404(Map, pk=pk)
-#     if request.method == "POST":
-#         form = MapForm(request.POST, instance=map)
-#         if form.is_valid():
-#             map = form.save(commit=False)
-#             map.author = request.user
-#             map.published_date = timezone.now()
-#             map.save()
-#             return redirect('map_detail', pk=map.pk)

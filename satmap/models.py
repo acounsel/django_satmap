@@ -20,6 +20,14 @@ class Layer(models.Model):
     palette = models.TextField(default = "'blue', 'purple', 'cyan', 'green', 'yellow', 'red'")
     is_collection = models.BooleanField(default=True)
 
+    def get_vis_params(self):
+        params = {}
+        for field in ['min', 'max','opacity']:
+            if getattr(self, field):
+                params[field] = float(getattr(self,field))
+        if self.palette:
+            params['palette'] = self.get_palette_list()
+        return params
     class Meta:
         ordering = ['name']
 
@@ -93,3 +101,5 @@ class Map(models.Model):
             published_date = self.published_date
         )
         map.layer.set(self.layer.all())
+
+    
