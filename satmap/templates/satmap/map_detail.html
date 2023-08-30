@@ -6,26 +6,7 @@
     <a href="{% url 'map_duplicate' pk=map.pk %}?project={{ map.project.id }}"><i class="fa-regular fa-copy" title="Duplicate Map"></i></a>
     <a href="{% url 'map_delete' pk=map.pk %}"><i class="fa-regular fa-trash-can" title="Delete Map"></i></a>
     <p class="py-3">{{ map.description }}</p>
-    <h3>Map Data</h3>
-    {% for layer in  map.layer.all %}
-    <div class="py-3">
-        <div class="layer-info-container">
-            <p><strong>{{ layer.name }}{% if layer.units %} ({{ layer.units }}):{% else %}:{% endif %}</strong> {{ layer.description }}</p>
-            {% for date in dates %}
-                {% if forloop.first %}
-                    <p class="date">{{ date }}</p>
-                {% endif %}
-            {% endfor %}
-        </div>
-        <div class="d-flex w-100 py-3">
-            <div style="flex:1;" class="text-center">{{ layer.min }}</div>
-            {% for color in layer.get_palette_list %}
-            <div style="flex:1;background-color: #{{ color }};"></div>
-            {% endfor %}
-            <div style="flex:1;" class="text-center">{{ layer.max }}</div>
-        </div>
-    </div>
-    {% endfor %}
+    
 
     <!-- <article class="post">
         <aside class="actions">  
@@ -46,6 +27,42 @@
     <div style="height:600px;width:100%">
         {{ folium_map|safe }}
     </div>
+    <h3>Map Data</h3>
+    {% for layer in  map.layer.all %}
+    <div class="py-3">
+        <div class="accordion accordion-flush" id="accordion{{ layer.id }}">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="flush-heading{{ layer.id }}">
+                <button class="accordion-button collapsed fs-3" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ layer.id }}" aria-expanded="false" aria-controls="flush-collapse{{ layer.id }}">
+                    <strong>{{ layer.name }}{% if layer.units %} ({{ layer.units }}){% endif %}
+                </button>
+              </h2>
+              <div id="flush-collapse{{ layer.id }}" class="accordion-collapse collapse" aria-labelledby="flush-heading{{ layer.id }}" data-bs-parent="#accordion{{ layer.id }}">
+
+                <div class="accordion-body">
+                    {% for date in dates %}
+                        {% if forloop.first %}
+                            <p>{{ date }}</p>
+                        {% endif %}
+                    {% endfor %}
+                    <p>{{ layer.description }}</p></div>
+              </div>
+            </div>
+        </div>
+            
+        </div>
+        <div class="d-flex w-100 py-3">
+            <div style="flex:1;" class="text-center">{{ layer.min }}</div>
+            {% for color in layer.get_palette_list %}
+            <div style="flex:1;background-color: #{{ color }};"></div>
+            {% endfor %}
+            <div style="flex:1;" class="text-center">{{ layer.max }}</div>
+        </div>
+    </div>
+
+
+    
+    {% endfor %}
     <!-- <div id="map{{ map.id }}" class="map"></div>
     <script>
         function initMap() {

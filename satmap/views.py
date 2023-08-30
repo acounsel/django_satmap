@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.views.generic import View, DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
+from .forms import MapForm
 from .models import Map, Project
 
 from folium import plugins
@@ -18,9 +19,8 @@ import ee
 
 class MapView(View):
     model = Map
-    fields = ('title', 'latitude', 'longitude', 'zoom', 
-        'project', 'layer', 'start_date', 'end_date')
-
+    form_class = MapForm
+   
 class MapList(MapView, ListView):
     pass
 
@@ -83,6 +83,7 @@ class MapDetail(MapView, DetailView):
         m.add_child(folium.LayerControl())
 
         python_dates = []
+        print(dates)
         for date in dates:
             python_date = datetime.utcfromtimestamp(date / 1000.0).strftime('%Y-%m-%d')
             python_dates.append(python_date)

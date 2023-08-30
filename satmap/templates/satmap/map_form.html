@@ -6,11 +6,11 @@
     <form method="POST" class="map-form">{% csrf_token %}
         {{ form|crispy }}
         
-        <label>Zoom:</label>
+        <!-- <label>Zoom:</label>
         <input type="range" min="0" max="18" value="{{ form.zoom.value }}" class="slider" id="zoomRange">
         <p>Zoom Level: <span id="zoomValue">{{ form.zoom.value }}</span></p>
         
-        <input type="hidden" name="{{ form.zoom.name }}" id="zoomInput" value="{{ form.zoom.value }}">
+        <input type="hidden" name="{{ form.zoom.name }}" id="zoomInput" value="{{ form.zoom.value }}"> -->
 
         <button type="submit" class="save btn btn-secondary">Save</button>
     </form>
