@@ -3,6 +3,7 @@ earthengine-api
 django-crispy-forms==1.14.0
 django_debug_toolbar==4.1.0
 django-extensions==3.2.3
+django-location-field==2.7.2
 django-storages==1.13.1
 dj-database-url>=0.5,<0.6
 crispy-bootstrap5==0.7
