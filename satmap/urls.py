@@ -15,5 +15,9 @@ urlpatterns = [
     path('map/timeseries/<int:pk>/', views.MapTimeSeries.as_view(), name='map_split'),
     path('map/edit/<int:pk>/', views.MapUpdate.as_view(), name='map_edit'),
     path('map/duplicate/<int:pk>/', views.MapDuplicate.as_view(), name='map_duplicate'),
-    path('map/delete/<int:pk>/', views.MapDelete.as_view(), name='map_delete')
+    path('map/delete/<int:pk>/', views.MapDelete.as_view(), name='map_delete'),
+    path('layer/create/', views.LayerCreate.as_view(), name='layer_create'),
+    path('layer/edit/<int:pk>/', views.LayerUpdate.as_view(), name='layer_edit'),
+    path('layer/delete/<int:pk>/', views.LayerDelete.as_view(), name='layer_delete'),
+    path('request-account', views.RequestAccount.as_view(), name='request_account')
 ]

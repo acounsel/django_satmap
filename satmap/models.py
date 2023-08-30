@@ -65,6 +65,13 @@ class Project(models.Model):
     
     def get_absolute_url(self):
         return reverse('project_detail', kwargs={'pk':self.id})
+    
+    def save(self, *args, **kwargs):
+        for map in self.map_set.all():
+            for layer in self.datasets.all():
+                map.layer.add(layer)
+            map.save()
+        super(Project, self).save(*args, **kwargs)
 
 class Map(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, 

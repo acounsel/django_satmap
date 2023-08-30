@@ -65,7 +65,7 @@
         {% endblock %}
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
         <div class="container-fluid">
             <!-- <a class="navbar-brand" href="/"><span class="mb-0 h1">SatMap</span></a> -->
             <a class="navbar-brand" href="/">SatMap</a>
@@ -77,7 +77,7 @@
                 {% with url_name=request.resolver_match.url_name %}
                 <a class="nav-link {% if url_name == 'project_list' %} active {% endif %}" aria-current="page" href="/">Home</a>
                 <a class="nav-link" href="#">About</a>
-                <a class="nav-link" href="#">Contact</a>
+                <a class="nav-link" href="{% url 'request_account' %}">Request Account</a>
                 <a class="nav-link {% if url_name == 'project_create' %} active {% endif %}" aria-current="page" href="{% url 'project_create' %}">Create Project</a>
                 {% if request.user.is_authenticated %}
                 <a class="nav-link" href="{% url 'logout' %}">Log Out</a>

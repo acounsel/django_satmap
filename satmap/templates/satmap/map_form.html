@@ -2,8 +2,8 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<h2>{% if request.resolver_match.url_name == 'map_edit'  %} Edit {% else %} New {% endif %} map</h2>
-    <form method="POST" class="map-form">{% csrf_token %}
+<h2>{% if request.resolver_match.url_name == 'map_edit'  %} Edit {% else %} New {% endif %} Map</h2>
+    <form method="POST" class="map-form w-75">{% csrf_token %}
         {{form.media}}
         {{ form|crispy }}
         

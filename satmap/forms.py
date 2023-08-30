@@ -12,3 +12,9 @@ class MapForm(forms.ModelForm):
             'start_date': forms.DateInput(attrs={'id':'datepicker_start'}),
             'end_date': forms.DateInput(attrs={'id':'datepicker_end'}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
+        super(MapForm, self).__init__(*args, **kwargs)
+        self.fields['project'].queryset = Project.objects.filter(
+            user=user)
