@@ -12,6 +12,8 @@ from .models import Map, Project
 from folium import plugins
 # from .forms import MapForm
 
+from datetime import datetime
+
 import ee
 
 class MapView(View):
@@ -45,16 +47,22 @@ class MapDetail(MapView, DetailView):
         #add map to figure
         m.add_to(figure)
 
+        dates = []
+
         for layer_instance in map.layer.all():
             #select the Dataset Here's used the MODIS data
             if layer_instance.is_collection:
-                dataset = (ee.ImageCollection(layer_instance.code).filter(
+                datasets = (ee.ImageCollection(layer_instance.code).filter(
                     ee.Filter.date(
                         map.start_date.strftime('%Y-%m-%d'),
                         map.end_date.strftime('%Y-%m-%d')
-                    )).first())
+                    )).sort('system:time_start', False))
+                dataset = datasets.first()
+                dates += datasets.aggregate_array('system:time_start').getInfo()
             else:
                 dataset = (ee.Image(layer_instance.code))
+                dates.append(dataset.get('system:time_start').getInfo())
+            
             layer = dataset.select(layer_instance.band)
 
             vis_params = layer_instance.get_vis_params()
@@ -70,11 +78,17 @@ class MapDetail(MapView, DetailView):
                         overlay = True,
                         control = True
                         ).add_to(m)
-
+        
         #add Layer control
         m.add_child(folium.LayerControl())
+
+        python_dates = []
+        for date in dates:
+            python_date = datetime.utcfromtimestamp(date / 1000.0).strftime('%Y-%m-%d')
+            python_dates.append(python_date)
         
         context['folium_map'] = figure.render()
+        context['dates'] = python_dates
         return context
 
 class MapSplit(MapView, DetailView):
@@ -251,7 +265,12 @@ class MapDuplicate(MapCreate):
         return initial.copy()
 
 class MapUpdate(MapView, UpdateView):
-    pass
+    def get_map(self):
+        return Map.objects.get(id=self.kwargs['pk'])
+    
+    def get_success_url(self):
+        map = self.get_map()
+        return reverse('map_detail', kwargs={'pk': map.id})
 
 class MapDelete(MapView, DeleteView):
     def get_map(self):
