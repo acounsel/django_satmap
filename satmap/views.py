@@ -1,6 +1,7 @@
 import folium
 from .utils import initialize_gee
 from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
 from django.urls import reverse
@@ -17,7 +18,7 @@ from datetime import datetime
 
 import ee
 
-class MapView(View):
+class MapView(LoginRequiredMixin, View):
     model = Map
     form_class = MapForm
    
@@ -281,8 +282,10 @@ class MapDelete(MapView, DeleteView):
         map = self.get_map()
         return reverse('project_detail', kwargs={'pk':map.project.id})
 
-class ProjectCreate(CreateView):
+class ProjectView(LoginRequiredMixin, View):
     model = Project
+
+class ProjectCreate(ProjectView, CreateView):
     fields = ('name', 'description',
         'latitude', 'longitude', 'start_date', 'end_date', 'datasets')
     
@@ -319,16 +322,20 @@ class ProjectDuplicate(ProjectCreate, CreateView):
     def get_success_url(self):
         return reverse('project_list')
 
-class ProjectDetail(DetailView):
-    model = Project
+class ProjectDetail(ProjectView, DetailView):
+    pass
 
 class ProjectUpdate(ProjectCreate, UpdateView):
     pass
 
-class ProjectList(ListView):
+class ProjectList(ProjectView, ListView):
     model = Project
 
-class ProjectDelete(DeleteView):
-    model = Project
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(user=self.request.user)
+    
+class ProjectDelete(ProjectView, DeleteView):
+
     def get_success_url(self):
         return reverse('project_list')

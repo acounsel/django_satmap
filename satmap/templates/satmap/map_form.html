@@ -4,6 +4,7 @@
 {% block content %}
 <h2>{% if request.resolver_match.url_name == 'map_edit'  %} Edit {% else %} New {% endif %} map</h2>
     <form method="POST" class="map-form">{% csrf_token %}
+        {{form.media}}
         {{ form|crispy }}
         
         <!-- <label>Zoom:</label>
@@ -25,4 +26,14 @@
             zoomInput.value = this.value;
         }
     </script>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    $( function() {
+        $( "#datepicker_start" ).datepicker();
+        $( "#datepicker_end" ).datepicker();
+    } );
+
+  </script>
 {% endblock %}

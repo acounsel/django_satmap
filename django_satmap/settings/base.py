@@ -36,7 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'satmap',
     'crispy_forms',
-    'crispy_bootstrap5'
+    'crispy_bootstrap5',
+    'location_field.apps.DefaultConfig'
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -93,6 +94,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 MAX_CONN_AGE = 600
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/

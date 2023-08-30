@@ -5,6 +5,8 @@ from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.postgres.fields import ArrayField
 
+from location_field.models.plain import PlainLocationField
+
 class Layer(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255)
@@ -22,6 +24,9 @@ class Layer(models.Model):
     description = models.TextField(blank=True)
     is_collection = models.BooleanField(default=True)
 
+    class Meta:
+        ordering = ['name']
+
     def get_vis_params(self):
         params = {}
         for field in ['min', 'max','opacity']:
@@ -30,8 +35,6 @@ class Layer(models.Model):
         if self.palette:
             params['palette'] = self.get_palette_list()
         return params
-    class Meta:
-        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -70,6 +73,8 @@ class Map(models.Model):
     description = models.TextField(blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    location = PlainLocationField(based_fields=['city'], zoom=7,
+        blank=True, null=True)
     zoom = models.IntegerField(default=8)
     layer = models.ManyToManyField(Layer, blank=True)
     start_date = models.DateField(blank=True, null=True)
@@ -80,6 +85,12 @@ class Map(models.Model):
     class Meta:
         ordering = ['title']
     
+    def save(self, *args, **kwargs):
+        if not self.latitude:
+            if self.location:
+                self.latitude, self.longitude = self.location.split(',')
+        super(Map, self).save(*args, **kwargs)
+
     def publish(self):
         self.published_date = timezone.now()
         self.save()
