@@ -10,7 +10,7 @@
 	</p>
 	{% for project in project_list %}
 		<article>
-			<div class="project-header">
+			<div class="header">
 				<h2><a href="{% url 'project_detail' pk=project.pk %}">{{ project.name }}</a></h2>
 				<div class="icon-container">
 					<a class="Icon" href="{% url 'project_edit' pk=project.pk %}"><i class="fa-light fa-pencil" title="Edit"></i></a> 

@@ -1,10 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
+    <div class="header">
+        <h2>{{ map.title }}</h2>
+        <div class="icon-container">
+            <a href="{% url 'map_edit' pk=map.pk %}"><i class="fa-light fa-pencil" title="Edit Map"></i></a>
+            <a href="{% url 'map_duplicate' pk=map.pk %}?project={{ map.project.id }}"><i class="fa-regular fa-copy" title="Duplicate Map"></i></a>
+            <a href="{% url 'map_delete' pk=map.pk %}"><i class="fa-regular fa-trash-can" title="Delete Map"></i></a>
+        </div>
+    </div>
     <h2>{{ map.title }}</h2>
-    <a href="{% url 'map_edit' pk=map.pk %}"><i class="fa-light fa-pencil" title="Edit Map"></i></a>
-    <a href="{% url 'map_duplicate' pk=map.pk %}?project={{ map.project.id }}"><i class="fa-regular fa-copy" title="Duplicate Map"></i></a>
-    <a href="{% url 'map_delete' pk=map.pk %}"><i class="fa-regular fa-trash-can" title="Delete Map"></i></a>
     <p class="py-3">{{ map.description }}</p>
     
 
