@@ -9,7 +9,7 @@ from django.views.generic import View, DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from .forms import MapForm
-from .models import Map, Project
+from .models import Layer, Map, Project
 
 from folium import plugins
 # from .forms import MapForm
@@ -21,7 +21,12 @@ import ee
 class MapView(LoginRequiredMixin, View):
     model = Map
     form_class = MapForm
-   
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
 class MapList(MapView, ListView):
     pass
 
@@ -339,3 +344,29 @@ class ProjectDelete(ProjectView, DeleteView):
 
     def get_success_url(self):
         return reverse('project_list')
+
+
+class LayerCreate(CreateView):
+    model = Layer
+
+    fields = ('name', 'code',
+        'band', 'min', 'max', 'opacity', 'palette', 'units', 'description', 'is_collection')
+    
+    def get_success_url(self):
+        return reverse('project_list')
+
+class LayerUpdate(LayerCreate, UpdateView):
+    pass
+    
+class LayerDelete(DeleteView):
+
+    def get_success_url(self):
+        return reverse('project_list')
+    
+class RequestAccount(View):
+    def get(self, request):
+        return render(request, 'satmap/request_account.html')
+
+    def post(self, request):
+        return redirect(reverse('project_list'))
+
