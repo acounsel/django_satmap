@@ -6,26 +6,9 @@
     <form method="POST" class="map-form w-75">{% csrf_token %}
         {{form.media}}
         {{ form|crispy }}
-        
-        <!-- <label>Zoom:</label>
-        <input type="range" min="0" max="18" value="{{ form.zoom.value }}" class="slider" id="zoomRange">
-        <p>Zoom Level: <span id="zoomValue">{{ form.zoom.value }}</span></p>
-        
-        <input type="hidden" name="{{ form.zoom.name }}" id="zoomInput" value="{{ form.zoom.value }}"> -->
 
         <button type="submit" class="save btn btn-secondary">Save</button>
     </form>
-    
-    <script>
-        var slider = document.getElementById("zoomRange");
-        var output = document.getElementById("zoomValue");
-        var zoomInput = document.getElementById("zoomInput");
-        output.innerHTML = slider.value;
-        slider.oninput = function() {
-            output.innerHTML = this.value;
-            zoomInput.value = this.value;
-        }
-    </script>
 {% endblock %}
 
 {% block javascript %}

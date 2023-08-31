@@ -19,7 +19,7 @@ class Layer(models.Model):
             MinValueValidator(0),
             MaxValueValidator(1)])
     #palette = ArrayField(models.CharField(max_length=255), default=['blue', 'purple', 'cyan', 'green', 'yellow', 'red'])
-    palette = models.TextField(default = "'blue', 'purple', 'cyan', 'green', 'yellow', 'red'")
+    palette = models.TextField(default = "[ 'blue', 'purple', 'cyan', 'green', 'yellow', 'red' ]")
     units = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
     is_collection = models.BooleanField(default=True)
@@ -43,7 +43,7 @@ class Layer(models.Model):
         palette = self.palette.split(', ')
         palettelist = []
         for color in palette:
-            palettelist.append(color[1:-1])
+            palettelist.append(color[7:-5])
         return palettelist
 
 class Project(models.Model):
@@ -51,8 +51,9 @@ class Project(models.Model):
         on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    latitude = models.DecimalField(max_digits=17, decimal_places=14, blank=True)
+    longitude = models.DecimalField(max_digits=17, decimal_places=14, blank=True)
+    location = PlainLocationField(based_fields=['city'], zoom=7)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
     datasets = models.ManyToManyField(Layer, blank=True)
@@ -67,6 +68,8 @@ class Project(models.Model):
         return reverse('project_detail', kwargs={'pk':self.id})
     
     def save(self, *args, **kwargs):
+        if not self.latitude:
+            self.latitude, self.longitude = self.location.split(',')
         for map in self.map_set.all():
             for layer in self.datasets.all():
                 map.layer.add(layer)
@@ -78,10 +81,9 @@ class Map(models.Model):
         blank=True, null=True)
     title = models.CharField(max_length=200, blank=True)
     description = models.TextField(blank=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
-    location = PlainLocationField(based_fields=['city'], zoom=7,
-        blank=True, null=True)
+    latitude = models.DecimalField(max_digits=17, decimal_places=14, blank=True)
+    longitude = models.DecimalField(max_digits=17, decimal_places=14, blank=True)
+    location = PlainLocationField(based_fields=['city'], zoom=7)
     zoom = models.IntegerField(default=8)
     layer = models.ManyToManyField(Layer, blank=True)
     start_date = models.DateField(blank=True, null=True)
@@ -94,8 +96,7 @@ class Map(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.latitude:
-            if self.location:
-                self.latitude, self.longitude = self.location.split(',')
+            self.latitude, self.longitude = self.location.split(',')
         super(Map, self).save(*args, **kwargs)
 
     def publish(self):
@@ -113,8 +114,7 @@ class Map(models.Model):
             project = project,
             title = self.title,
             description = self.description,
-            latitude = self.latitude,
-            longitude = self.longitude,
+            location = self.location,
             zoom = self.zoom,
             start_date = self.start_date,
             end_date = self.end_date,
