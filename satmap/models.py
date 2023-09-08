@@ -1,9 +1,14 @@
+import ee
+import folium
+
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.postgres.fields import ArrayField
+
+from .utils import initialize_gee
 
 from location_field.models.plain import PlainLocationField
 
@@ -26,6 +31,14 @@ class Layer(models.Model):
 
     class Meta:
         ordering = ['name']
+
+    def get_array_params(self):
+        params = {}
+        for field in ['min', 'max','opacity']:
+            if getattr(self, field):
+                params[field] = float(getattr(self,field))
+        params['dimensions'] = '400x400'
+        return params
 
     def get_vis_params(self):
         params = {}
@@ -72,6 +85,9 @@ class Project(models.Model):
                 map.layer.add(layer)
             map.save()
         super(Project, self).save(*args, **kwargs)
+
+class Rectangle(models.Model):
+    southwest = models.DecimalField(max_digits=9, decimal_places=6)
 
 class Map(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, 
@@ -122,4 +138,15 @@ class Map(models.Model):
         )
         map.layer.set(self.layer.all())
 
-    
+    def get_array(self):
+        initialize_gee()
+
+
+class MapRender(models.Model):
+    map = models.ForeignKey(Map, on_delete=models.CASCADE)
+    html = models.TextField(blank=True)
+    date = models.DateField(blank=True, null=True)
+
+    def __str__(self):
+        if self.date:
+            return '{}: {}'.format(self.map.title, self.date)

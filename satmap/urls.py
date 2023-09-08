@@ -11,6 +11,7 @@ urlpatterns = [
     path('maps', views.MapList.as_view(), name='map_list'),
     path('map/create/', views.MapCreate.as_view(), name='map_create'),
     path('map/<int:pk>/', views.MapDetail.as_view(), name='map_detail'),
+    path('map/array/<int:pk>/', views.MapArray.as_view(), name='map_array'),
     path('map/split/<int:pk>/', views.MapSplit.as_view(), name='map_split'),
     path('map/timeseries/<int:pk>/', views.MapTimeSeries.as_view(), name='map_split'),
     path('map/edit/<int:pk>/', views.MapUpdate.as_view(), name='map_edit'),

@@ -89,7 +89,6 @@ class MapDetail(MapView, DetailView):
         m.add_child(folium.LayerControl())
 
         python_dates = []
-        print(dates)
         for date in dates:
             python_date = datetime.utcfromtimestamp(date / 1000.0).strftime('%Y-%m-%d')
             python_dates.append(python_date)
@@ -98,6 +97,63 @@ class MapDetail(MapView, DetailView):
         context['dates'] = python_dates
         return context
 
+class MapArray(MapView, DetailView):
+    template_name = 'satmap/map_array.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        initialize_gee()
+        # Define an image.
+        map = self.get_object()
+
+        mapbox_satellite_url = 'https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1Ijoic2FyYWFiaSIsImEiOiJjbGxvYmpxYWMwNzR4M2luM2FhMTBtMDFwIn0.dtam9tTkw1w0b88z-c_BDA'
+        
+        roi = ee.Geometry.Rectangle([106.81405, 2.88569, 106.97828, 43.01367])
+        vis_params = map.layer.first().get_array_params()
+        datasets= ee.ImageCollection('COPERNICUS/S2') \
+            .filterBounds(roi) \
+            .filterDate(map.start_date.strftime('%Y-%m-%d'), map.end_date.strftime('%Y-%m-%d')) \
+            .filter(ee.Filter.calendarRange(8, 8, 'month')) \
+            .sort('system:time_start', True)
+        
+        timestamps = list(set([img['properties']['system:time_start'] \
+            for img in datasets.getInfo()['features']]))
+        timestamps.sort()
+
+        map_data = []
+        
+
+        for timestamp in timestamps:
+            # Filter the dataset for the current timestamp and get the first image.
+            img_obj = ee.ImageCollection('COPERNICUS/S2') \
+                .filterBounds(roi) \
+                .filterDate(map.start_date.strftime('%Y-%m-%d'), map.end_date.strftime('%Y-%m-%d')) \
+                .filter(ee.Filter.calendarRange(8, 8, 'month')) \
+                .filter(ee.Filter.eq('system:time_start', timestamp)) \
+                .first()
+            mapid = img_obj.getMapId(vis_params)
+            timestamp = img_obj.getInfo()['properties']['system:time_start']  # Adjust DATE_PROPERTY to your dataset's date property
+            date = datetime.fromtimestamp(timestamp / 1000)
+            m = folium.Map(
+                location=[map.latitude, map.longitude], 
+                tiles=mapbox_satellite_url, 
+                attr='Mapbox',
+                zoom_start=map.zoom
+            )
+            folium.TileLayer(
+                tiles=mapid['tile_fetcher'].url_format,
+                attr='Google Earth Engine',
+                overlay=True,
+                control=True
+            ).add_to(m)
+            map_html = m._repr_html_()
+            print(map_html)
+            map_data.append({'map': map_html, 'date': date})
+        context['maps'] = map_data
+        
+       
+        return context
+    
 class MapSplit(MapView, DetailView):
     template_name = 'satmap/map_split.html'
 
@@ -180,18 +236,27 @@ class MapTimeSeries(MapView, DetailView):
 
         figure = folium.Figure()
         
+        # mapbox_satellite_url = "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token={}".format(settings.MAPBOX_KEY)
+        mapbox_satellite_url = 'https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1Ijoic2FyYWFiaSIsImEiOiJjbGxvYmpxYWMwNzR4M2luM2FhMTBtMDFwIn0.dtam9tTkw1w0b88z-c_BDA'
+
         #create Folium Object
         m = folium.Map(
-            location=[map.latitude, map.longitude],
+            location=[map.latitude, map.longitude], 
+            tiles=mapbox_satellite_url, 
+            attr='Mapbox',
             zoom_start=map.zoom
         )
+        
         for layer_instance in map.layer.all():
             #select the Dataset Here's used the MODIS data
             dataset = (ee.ImageCollection(layer_instance.code).filter(
                 ee.Filter.date(
                     map.start_date.strftime('%Y-%m-%d'),
                     map.end_date.strftime('%Y-%m-%d')
-                )).first())
+                )))
+            print('SIZE: {}'.format(dataset.size().getInfo()))
+            print('COUNT: {}'.format(dataset.count()))
+            print(dataset.__dict__)
             layer = dataset.select(layer_instance.band)
 
             vis_params = layer_instance.get_vis_params()
