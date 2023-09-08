@@ -1,5 +1,5 @@
 import folium
-from .utils import initialize_gee
+
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render, get_object_or_404
@@ -8,11 +8,11 @@ from django.urls import reverse
 from django.views.generic import View, DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
-from .forms import MapForm
+from .forms import LayerForm, MapForm, ProjectForm
 from .models import Layer, Map, Project
 
+from .utils import initialize_gee
 from folium import plugins
-# from .forms import MapForm
 
 from datetime import datetime
 
@@ -26,9 +26,6 @@ class MapView(LoginRequiredMixin, View):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
-
-class MapList(MapView, ListView):
-    pass
 
 class MapDetail(MapView, DetailView):
     
@@ -331,8 +328,7 @@ class MapDuplicate(MapCreate):
         initial['zoom'] = map.zoom
         initial['start_date'] = map.start_date
         initial['end_date'] = map.end_date
-        initial['latitude'] = map.latitude
-        initial['longitude'] = map.longitude
+        initial['location'] = map.location
         initial['layer'] = map.layer.all()
         return initial.copy()
 
@@ -354,11 +350,9 @@ class MapDelete(MapView, DeleteView):
 
 class ProjectView(LoginRequiredMixin, View):
     model = Project
+    form_class = ProjectForm
 
 class ProjectCreate(ProjectView, CreateView):
-    fields = ('name', 'description',
-        'latitude', 'longitude', 'start_date', 'end_date', 'datasets')
-    
     def form_valid(self, form):
         form.instance.user = self.request.user
         response = super().form_valid(form)
@@ -375,8 +369,7 @@ class ProjectDuplicate(ProjectCreate, CreateView):
         initial['description'] = project.description
         initial['start_date'] = project.start_date
         initial['end_date'] = project.end_date
-        initial['latitude'] = project.latitude
-        initial['longitude'] = project.longitude
+        initial['location'] = project.location
         initial['datasets'] = project.datasets.all()
         return initial.copy()
     
@@ -397,6 +390,11 @@ class ProjectDetail(ProjectView, DetailView):
 
 class ProjectUpdate(ProjectCreate, UpdateView):
     pass
+    
+class ProjectDelete(ProjectView, DeleteView):
+
+    def get_success_url(self):
+        return reverse('project_list')
 
 class ProjectList(ProjectView, ListView):
     model = Project
@@ -404,29 +402,27 @@ class ProjectList(ProjectView, ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         return queryset.filter(user=self.request.user)
-    
-class ProjectDelete(ProjectView, DeleteView):
 
-    def get_success_url(self):
-        return reverse('project_list')
-
-
-class LayerCreate(CreateView):
+class LayerView(LoginRequiredMixin, View):
     model = Layer
+    form_class = LayerForm
 
-    fields = ('name', 'code',
-        'band', 'min', 'max', 'opacity', 'palette', 'units', 'description', 'is_collection')
-    
+class LayerCreate(LayerView, CreateView):    
     def get_success_url(self):
-        return reverse('project_list')
+        return reverse('layer_list')
+
+class LayerDetail(LayerView, DetailView):
+    pass
 
 class LayerUpdate(LayerCreate, UpdateView):
     pass
     
-class LayerDelete(DeleteView):
-
+class LayerDelete(LayerView, DeleteView):
     def get_success_url(self):
-        return reverse('project_list')
+        return reverse('layer_list')
+    
+class LayerList(LayerView, ListView):
+    model = Layer
     
 class RequestAccount(View):
     def get(self, request):
